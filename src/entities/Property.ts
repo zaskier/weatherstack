@@ -5,16 +5,16 @@ export class Property {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   city: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   street: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   state: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   zipCode: string;
 
   @Column({ type: 'jsonb', nullable: true })
