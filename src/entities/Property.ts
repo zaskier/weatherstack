@@ -18,6 +18,7 @@ export class Property {
   zipCode: string;
 
   @Column({ type: 'jsonb', nullable: true })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   weatherData: any;
 
   @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })

@@ -14,6 +14,7 @@ const { Property } = await import('../entities/Property.js');
 
 describe('PropertyRepository', () => {
   let repository: PropertyRepository;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockTypeormRepo: any;
 
   beforeEach(() => {
@@ -34,7 +35,7 @@ describe('PropertyRepository', () => {
       andWhere: jest.fn().mockReturnThis(),
       orderBy: jest.fn().mockReturnThis(),
       getMany: jest.fn().mockResolvedValue(mockProperties)
-    } as any;
+    };
     mockTypeormRepo.createQueryBuilder.mockReturnValue(mockQueryBuilder);
 
     const result = await repository.findAll({

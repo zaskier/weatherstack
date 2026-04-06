@@ -1,4 +1,4 @@
-import { jest, describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { buildApp } from './index.js';
 import { FastifyInstance } from 'fastify';
 import request from 'supertest';
