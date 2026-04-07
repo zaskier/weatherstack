@@ -5,7 +5,7 @@ export const schema = `
     street: String!
     state: String!
     zipCode: String!
-    weatherData: JSON
+    weather: JSON
     lat: Float
     long: Float
     createdAt: String!

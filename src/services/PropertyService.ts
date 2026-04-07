@@ -1,11 +1,15 @@
 import { Property } from '../entities/Property.js';
 import { PropertyRepository } from '../repositories/PropertyRepository.js';
+import { WeatherstackService } from './WeatherstackService.js';
+import { WeatherstackConfig } from '../types/weather.js';
 
 export class PropertyService {
   private propertyRepository: PropertyRepository;
+  private weatherstackService: WeatherstackService;
 
-  constructor() {
+  constructor(config: WeatherstackConfig) {
     this.propertyRepository = new PropertyRepository();
+    this.weatherstackService = new WeatherstackService(config);
   }
 
   async getAllProperties(options?: {
@@ -30,37 +34,20 @@ export class PropertyService {
     state: string;
     zipCode: string;
   }): Promise<Property> {
-    // MOCK: Todo replace with real Weatherstack API calls
-    const mockedWeatherData = {
-      current: {
-        observation_time: '12:00 PM',
-        temperature: 20,
-        weather_code: 113,
-        weather_icons: [
-          'https://cdn.worldweatheronline.com/images/wsymbols01_png_64/wsymbol_0001_sunny.png'
-        ],
-        weather_descriptions: ['Sunny'],
-        wind_speed: 10,
-        wind_degree: 180,
-        wind_dir: 'S',
-        pressure: 1010,
-        precip: 0,
-        humidity: 50,
-        cloudcover: 0,
-        feelslike: 20,
-        uv_index: 5,
-        visibility: 10,
-        is_day: 'yes'
-      }
-    };
-    const mockedLat = 33.609;
-    const mockedLong = -111.729;
+    const weatherResponse = await this.weatherstackService.fetchCurrentWeather(
+      data.city,
+      data.state
+    );
+
+    if (!weatherResponse.location || !weatherResponse.weather) {
+      throw new Error('Incomplete weather data received from API');
+    }
 
     const property = await this.propertyRepository.create({
       ...data,
-      weatherData: mockedWeatherData,
-      lat: mockedLat,
-      long: mockedLong
+      weather: weatherResponse.weather,
+      lat: parseFloat(weatherResponse.location.lat),
+      long: parseFloat(weatherResponse.location.lon)
     });
 
     return property;
