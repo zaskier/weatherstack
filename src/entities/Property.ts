@@ -19,7 +19,7 @@ export class Property {
 
   @Column({ type: 'jsonb', nullable: true })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  weatherData: any;
+  weather: any;
 
   @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
   lat: number;
