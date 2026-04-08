@@ -17,7 +17,6 @@ export class WeatherstackService {
   }
 
   /**
-   * Fetches current weather for a location in USA.
    * Includes 1-level retry for 615 errors and In-memory Caching.
    */
   async fetchCurrentWeather(
@@ -33,7 +32,7 @@ export class WeatherstackService {
       return cached.data;
     }
 
-    const query = encodeURIComponent(`${city}, ${state}, USA`);
+    const query = encodeURIComponent(`${city}, ${state}`);
     const url = `${this.apiUrl}current?access_key=${this.apiKey}&query=${query}`;
 
     try {
