@@ -9,6 +9,9 @@
     "format": "prettier --write 'src/**/*.ts'",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "build": "tsc",
+    "typeorm": "NODE_OPTIONS='--import tsx' typeorm-ts-node-commonjs",
+    "migration:generate": "npm run typeorm migration:generate -- -d src/database/data-source.ts",
+    "migration:run": "npm run typeorm migration:run -- -d src/database/data-source.ts",
     "start": "node dist/index.js",
     "start:dev": "tsx watch src/index.ts"
   },

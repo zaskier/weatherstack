@@ -9,9 +9,10 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'property',
-  synchronize: true, // Only for development/assessment purposes
+  synchronize: false,
   logging: true,
   entities: [Property],
-  migrations: [],
+  migrations: ['src/database/migrations/*.ts', 'dist/database/migrations/*.js'],
+  migrationsRun: true,
   subscribers: []
 });
