@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 'typeorm';
 
 @Entity('property')
 export class Property {
@@ -11,6 +11,7 @@ export class Property {
   @Column({ type: 'varchar' })
   street: string;
 
+  @Index()
   @Column({ type: 'varchar' })
   state: string;
 
@@ -27,6 +28,7 @@ export class Property {
   @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
   long: number;
 
+  @Index()
   @CreateDateColumn()
   createdAt: Date;
 }
