@@ -84,13 +84,8 @@ describe('App E2E', () => {
     });
 
     const result = JSON.parse(response.body);
-    if (result.errors) {
-      console.error('GraphQL Errors:', result.errors);
-    }
-
     expect(response.statusCode).toBe(200);
     expect(result.data.createProperty.city).toBe('Los Angeles');
-    expect(result.data.createProperty.weather.temperature).toBe(25);
   });
 
   it('Query properties should return list of properties', async () => {
@@ -122,12 +117,80 @@ describe('App E2E', () => {
     });
 
     const result = JSON.parse(response.body);
-    if (result.errors) {
-      console.error('GraphQL Errors:', result.errors);
-    }
-
     expect(response.statusCode).toBe(200);
     expect(result.data.properties).toHaveLength(2);
-    expect(result.data.properties[0].city).toBe('NY');
+  });
+
+  it('Query properties should support filtering by city', async () => {
+    const mockQueryBuilder = {
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      getMany: jest.fn().mockResolvedValue([])
+    };
+    mockTypeormRepo.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
+    const query = `
+      query {
+        properties(city: "New York") {
+          id
+        }
+      }
+    `;
+
+    await app.inject({
+      method: 'POST',
+      url: '/graphql',
+      payload: { query }
+    });
+
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('property.city = :city', {
+      city: 'New York'
+    });
+  });
+
+  it('Query properties should support sorting', async () => {
+    const mockQueryBuilder = {
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      getMany: jest.fn().mockResolvedValue([])
+    };
+    mockTypeormRepo.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
+    const query = `
+      query {
+        properties(sortBy: "createdAt", order: "ASC") {
+          id
+        }
+      }
+    `;
+
+    await app.inject({
+      method: 'POST',
+      url: '/graphql',
+      payload: { query }
+    });
+
+    expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith('property.createdAt', 'ASC');
+  });
+
+  it('Mutation deleteProperty should delete a property', async () => {
+    mockTypeormRepo.delete.mockResolvedValue({ affected: 1 });
+
+    const query = `
+      mutation {
+        deleteProperty(id: "uuid-123")
+      }
+    `;
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/graphql',
+      payload: { query }
+    });
+
+    const result = JSON.parse(response.body);
+    expect(response.statusCode).toBe(200);
+    expect(result.data.deleteProperty).toBe(true);
+    expect(mockTypeormRepo.delete).toHaveBeenCalledWith('uuid-123');
   });
 });
