@@ -1,7 +1,7 @@
 {
-  "name": "weatherstack",
+  "name": "property-management",
   "version": "1.0.0",
-  "description": "graphql based weather api",
+  "description": "graphql based properties menagment api",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
@@ -17,21 +17,22 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zaskier/weatherstack.git"
+    "url": "git+https://github.com/zaskier/property-management"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/zaskier/weatherstack/issues"
+    "url": "https://github.com/zaskier/property-management/issues"
   },
-  "homepage": "https://github.com/zaskier/weatherstack#readme",
+  "homepage": "https://github.com/zaskier/property-management#readme",
   "dependencies": {
     "@fastify/env": "^6.0.0",
     "@fastify/postgres": "^6.0.2",
     "fastify": "^5.8.4",
     "graphql": "^16.13.2",
     "graphql-type-json": "^0.3.2",
+    "lru-cache": "^11.3.3",
     "mercurius": "^16.9.0",
     "pg": "^8.13.3",
     "reflect-metadata": "^0.2.2",

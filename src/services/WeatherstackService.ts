@@ -1,16 +1,10 @@
-import {
-  WeatherstackResponse,
-  CacheEntry,
-  WeatherstackConfig,
-  RawWeatherData
-} from '../types/weather.js';
+import { WeatherstackResponse, WeatherstackConfig, RawWeatherData } from '../types/weather.js';
+import { LRUCache } from 'lru-cache';
 
 export class WeatherstackService {
   private readonly apiKey: string;
   private readonly apiUrl: string;
-  private cache: Map<string, CacheEntry> = new Map();
-  // Cahche for the same city request for TTL: 20 minutes
-  private readonly CACHE_TTL = 20 * 60 * 1000;
+  private cache: LRUCache<string, WeatherstackResponse>;
 
   constructor(config: WeatherstackConfig) {
     this.apiKey = config.WEATHER_API_KEY;
@@ -19,23 +13,35 @@ export class WeatherstackService {
     if (!this.apiKey) {
       throw new Error('WEATHER_API_KEY is not provided in config');
     }
+
+    // LRU Cache with fixed size and automatic TTL cleanup
+    this.cache = new LRUCache({
+      max: 200, // Maximum number of locations to store
+      ttl: 20 * 60 * 1000, // 20-minute TTL
+      allowStale: false,
+      updateAgeOnGet: false
+    });
   }
 
   /**
-   * Includes 1-level retry for 615 errors and In-memory Caching.
+   * Includes exponential backoff retry for 429 and 615 errors, and memory-safe LRU caching.
    */
   async fetchCurrentWeather(
     city: string,
     state: string,
-    retryCount = 1
+    retryCount = 1,
+    delay = 1000
   ): Promise<WeatherstackResponse> {
     const cacheKey = `${city.toLowerCase()}_${state.toLowerCase()}`.trim();
 
     // Check Cache
     const cached = this.cache.get(cacheKey);
-    if (cached && cached.expiry > Date.now()) {
-      return cached.data;
+    if (cached) {
+      console.info(`[WeatherstackService] Cache HIT for ${city}, ${state}`);
+      return cached;
     }
+
+    console.info(`[WeatherstackService] Cache MISS for ${city}, ${state}`);
 
     const query = encodeURIComponent(`${city}, ${state}`);
     const url = `${this.apiUrl}current?access_key=${this.apiKey}&query=${query}`;
@@ -44,17 +50,26 @@ export class WeatherstackService {
       const response = await fetch(url);
 
       if (!response.ok) {
+        // Handle Rate Limiting at HTTP level
+        if (response.status === 429 && retryCount > 0) {
+          console.warn(`[WeatherstackService] HTTP 429: Retrying in ${delay}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          return await this.fetchCurrentWeather(city, state, retryCount - 1, delay * 2);
+        }
         throw new Error(`Weatherstack HTTP Error: ${response.status} ${response.statusText}`);
       }
+
       const apiData = (await response.json()) as Record<string, unknown>;
 
       // Weatherstack quirk: Handle successful HTTP but logical failure
       if (apiData.success === false && apiData.error) {
         const error = apiData.error as { code: number; info: string };
+
         // Retry logic for 615 (Generic Failure)
         if (error.code === 615 && retryCount > 0) {
-          console.warn(`[WeatherstackService] Retrying due to error 615 for ${city}`);
-          return await this.fetchCurrentWeather(city, state, retryCount - 1);
+          console.warn(`[WeatherstackService] API 615: Retrying in ${delay}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          return await this.fetchCurrentWeather(city, state, retryCount - 1, delay * 2);
         }
         this.handleApiError(error);
       }
@@ -69,10 +84,7 @@ export class WeatherstackService {
       }
 
       // Update Cache
-      this.cache.set(cacheKey, {
-        data,
-        expiry: Date.now() + this.CACHE_TTL
-      });
+      this.cache.set(cacheKey, data);
 
       return data;
     } catch (error) {
