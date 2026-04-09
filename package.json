@@ -26,6 +26,9 @@
     "url": "https://github.com/zaskier/property-management/issues"
   },
   "homepage": "https://github.com/zaskier/property-management#readme",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "dependencies": {
     "@fastify/env": "^6.0.0",
     "@fastify/postgres": "^6.0.2",

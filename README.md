@@ -30,6 +30,7 @@ The architectural goal was to build a clean, highly testable structure optimized
 - **Database Indexing:**
   - An index is applied to the `state` column, accelerating high-level geographic filtering before narrowing down by city or zip code.
   - An index is applied to the `createdAt` column to optimize the performance of default chronological sorting.
+- **Modern Runtime:** Leverages the latest stable Node.js LTS version for built-in performance.
 
 ## Features 🚀
 
